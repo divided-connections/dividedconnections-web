@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divided Connections</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --text-faint: #9b9b9b;
+    --bg: #ffffff;
+    --bg-soft: #f7f6f3;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.22);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); font-size: 15px; line-height: 1.6; }
+  .serif { font-family: 'DM Serif Display', serif; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 2.5rem; border-bottom: 0.5px solid var(--border);
+    position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 100;
+  }
+  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 18px; cursor: pointer; background: none; border: none; color: var(--text); padding: 0; }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-link {
+    font-size: 13px; color: var(--text-muted); cursor: pointer; padding: 4px 0;
+    border: none; border-bottom: 1.5px solid transparent; background: none;
+    font-family: 'DM Sans', sans-serif; transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--text); border-bottom-color: var(--text); }
+
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .nav-logo { font-size: 16px; }
+    .nav-links { gap: 0; width: 100%; justify-content: space-between; }
+    .nav-link { font-size: 12px; padding: 6px 4px; }
+    .hero { padding: 2.5rem 1.25rem 2rem; }
+    .hero h1 { font-size: 28px; }
+    .hero-body { font-size: 14px; }
+    .stats-row { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 0.5px solid var(--border); }
+    .stat:last-child { border-bottom: none; }
+    .categories { grid-template-columns: 1fr; }
+    .cat-card { border-right: none; }
+    .cat-card:nth-last-child(-n+2) { border-bottom: 0.5px solid var(--border); }
+    .cat-card:last-child { border-bottom: none; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-item:nth-child(2n) { border-right: none; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-wrap, .about-wrap { padding: 2rem 1.25rem; }
+    .section-header { padding: 1.5rem 1.25rem 1rem; }
+    .filter-bar { padding: 1rem 1.25rem; }
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HOME */
+  .hero { padding: 5rem 2.5rem 4rem; max-width: 700px; border-bottom: 0.5px solid var(--border); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; font-weight: 500; }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: 44px; line-height: 1.15; margin-bottom: 1.5rem; }
+  .hero h1 em { font-style: italic; color: var(--text-muted); }
+  .hero-body { font-size: 16px; color: var(--text-muted); line-height: 1.8; max-width: 520px; margin-bottom: 2rem; font-weight: 300; }
+
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--text); color: white; border: none;
+    padding: 10px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s;
+    text-decoration: none;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px; background: none; color: var(--text);
+    border: 0.5px solid var(--border-strong); padding: 10px 20px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg-soft); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 0.5px solid var(--border); }
+  .stat { padding: 2rem 2.5rem; border-right: 0.5px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 34px; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 2rem 2.5rem 1.5rem; border-bottom: 0.5px solid var(--border);
+  }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 22px; }
+  .section-sub { font-size: 13px; color: var(--text-muted); }
+
+  .categories { display: grid; grid-template-columns: 1fr 1fr; }
+  .cat-card { padding: 2rem 2.5rem; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .cat-card:nth-child(2n) { border-right: none; }
+  .cat-card:nth-last-child(-n+2) { border-bottom: none; }
+  .cat-icon { font-size: 22px; margin-bottom: 1rem; color: var(--text-muted); }
+  .cat-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .cat-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+  .tag { display: inline-block; margin-top: 10px; font-size: 11px; padding: 3px 10px; border-radius: 100px; font-weight: 500; letter-spacing: 0.04em; }
+  .tag-hostile { background: #FAECE7; color: #993C1D; }
+  .tag-humane { background: #EAF3DE; color: #3B6D11; }
+  .tag-research { background: #E6F1FB; color: #185FA5; }
+
+  /* GALLERY */
+  .filter-bar { display: flex; gap: 8px; padding: 1rem 2.5rem; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
+  .chip {
+    font-size: 12px; padding: 5px 14px; border-radius: 100px;
+    border: 0.5px solid var(--border-strong); cursor: pointer;
+    background: none; color: var(--text-muted); font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .chip.active, .chip:hover { background: var(--text); color: white; border-color: var(--text); }
+
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .gallery-item { border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .gallery-item:nth-child(3n) { border-right: none; }
+  .gallery-img { width: 100%; aspect-ratio: 1; background: var(--bg-soft); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+  .gallery-meta { padding: 12px 16px; }
+  .gallery-city { font-size: 12px; font-weight: 500; }
+  .gallery-zip { font-size: 11px; color: var(--text-muted); }
+  .gallery-caption { font-size: 12px; color: var(--text-muted); margin-top: 5px; line-height: 1.55; }
+  .gallery-empty { padding: 4rem 2.5rem; text-align: center; color: var(--text-muted); font-size: 14px; }
+
+  /* SUBMIT */
+  .form-wrap { padding: 3rem 2.5rem; max-width: 640px; }
+  .form-title { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 0.5rem; }
+  .form-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; max-width: 480px; font-weight: 300; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1.5rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  input, select, textarea {
+    font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 9px 12px;
+    border-radius: var(--radius); border: 0.5px solid var(--border-strong);
+    background: white; color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--text); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
+
+  .upload-zone {
+    border: 0.5px dashed var(--border-strong); border-radius: var(--radius-lg);
+    padding: 2.5rem; text-align: center; cursor: pointer; transition: background 0.15s;
+  }
+  .upload-zone:hover { background: var(--bg-soft); }
+  .upload-icon { font-size: 30px; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .upload-hint { font-size: 13px; color: var(--text-muted); }
+  .upload-hint strong { color: var(--text); }
+
+  .type-toggle { display: flex; gap: 10px; }
+  .type-btn {
+    flex: 1; padding: 12px; border-radius: var(--radius); border: 0.5px solid var(--border-strong);
+    cursor: pointer; background: none; color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 7px; transition: all 0.15s;
+  }
+  .type-btn.selected { border-color: var(--text); color: var(--text); background: var(--bg-soft); }
+  hr.divider { grid-column: 1/-1; border: none; border-top: 0.5px solid var(--border); margin: 4px 0; }
+  .form-actions { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; }
+  .form-note { font-size: 12px; color: var(--text-muted); }
+  .success { display: none; background: #EAF3DE; color: #3B6D11; border-radius: var(--radius); padding: 14px 18px; margin-top: 1.5rem; font-size: 13px; align-items: center; gap: 10px; }
+  .success.show { display: flex; }
+
+  /* ABOUT */
+  .about-wrap { padding: 3.5rem 2.5rem; max-width: 600px; }
+  .about-title { font-family: 'DM Serif Display', serif; font-size: 34px; line-height: 1.2; margin-bottom: 2rem; }
+  .about-body { font-size: 15px; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.5rem; font-weight: 300; }
+  .about-body strong { color: var(--text); font-weight: 500; }
+  .pull-quote { border-left: 2px solid var(--border-strong); padding-left: 1.5rem; margin: 2rem 0; font-family: 'DM Serif Display', serif; font-size: 19px; line-height: 1.55; color: var(--text); }
+  .pillars { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 2rem 0; }
+  .pillar { padding: 1.25rem 1.5rem; border-bottom: 0.5px solid var(--border); }
+  .pillar:last-child { border-bottom: none; }
+  .pillar-num { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .pillar-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .pillar-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+  svg.icon { width: 18px; height: 18px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-logo" onclick="show('home', document.querySelectorAll('.nav-link')[0])">Divided Connections</button>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="show('home',this)">Home</button>
+    <button class="nav-link" onclick="show('gallery',this)">Gallery</button>
+    <button class="nav-link" onclick="show('submit',this)">Submit</button>
+    <button class="nav-link" onclick="show('map',this)">Map</button>
+    <button class="nav-link" onclick="show('about',this)">About</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="eyebrow">A photo archive documenting how infrastructure brings us together — or tears us apart</div>
+    <h1>The connections that should unite us are <em>divided</em> by design. <em>We're building the proof.</em></h1>
+    <p class="hero-body">Divided Connections is a community photo archive documenting the infrastructure that separates us — and the infrastructure that brings us together. Every sidewalk, bench, and transit stop is a connection point. When those are divided unequally, so are we. Submit a photo, share a story, help us build the evidence for change.</p>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+      <button class="btn-secondary" onclick="show('gallery', document.querySelectorAll('.nav-link')[1])">Browse the archive</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Photos submitted</div></div>
+    <div class="stat"><div class="stat-num">—</div><div class="stat-label">Cities documented</div></div>
+    <div class="stat"><div class="stat-num">—</div><div class="stat-label">Neighborhoods mapped</div></div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">What we document</span>
+    <span class="section-sub">Two sides of the same city</span>
+  </div>
+  <div class="categories">
+    <div class="cat-card">
+      <div class="cat-icon">⬡</div>
+      <div class="cat-title">Hostile design</div>
+      <div class="cat-body">Anti-homeless spikes, armrest benches, boulders under bridges, skateboard stoppers, and other infrastructure designed to exclude vulnerable people from public space.</div>
+      <span class="tag tag-hostile">Exclusionary</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon">◯</div>
+      <div class="cat-title">Humane design</div>
+      <div class="cat-body">Accessible playgrounds, public water fountains, sheltered bus stops, benches without armrests, shaded walkways — infrastructure that serves everyone.</div>
+      <span class="tag tag-humane">Inclusive</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon">△</div>
+      <div class="cat-title">Accessibility failures</div>
+      <div class="cat-body">ADA non-compliance, missing audio crossing signals, dead-end sidewalks, no adaptive playground equipment, inaccessible transit entrances.</div>
+      <span class="tag tag-hostile">Exclusionary</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon">□</div>
+      <div class="cat-title">Neighborhood patterns</div>
+      <div class="cat-body">Every submission is tagged by city and neighborhood, letting us map where inhumane infrastructure concentrates — and bring that data directly to city lawmakers.</div>
+      <span class="tag tag-research">Research</span>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div id="page-gallery" class="page">
+  <div class="section-header">
+    <span class="section-title">The archive</span>
+    <span class="section-sub">Community-submitted photographs</span>
+  </div>
+  <div class="filter-bar">
+    <button class="chip active" onclick="filterChip(this)">All</button>
+    <button class="chip" onclick="filterChip(this)">Hostile design</button>
+    <button class="chip" onclick="filterChip(this)">Humane design</button>
+    <button class="chip" onclick="filterChip(this)">Accessibility</button>
+    <button class="chip" onclick="filterChip(this)">Transit</button>
+    <button class="chip" onclick="filterChip(this)">Parks</button>
+  </div>
+  <div class="gallery-empty">
+    <p style="font-size:15px; font-family:'DM Serif Display',serif; margin-bottom:0.75rem;">The archive is waiting.</p>
+    <p style="margin-bottom:1.5rem;">Be the first to document the disconnection in your neighborhood.</p>
+    <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div id="page-submit" class="page">
+  <div class="form-wrap">
+    <div class="eyebrow">Contribute to the archive</div>
+    <h2 class="form-title">Submit a photograph</h2>
+    <p class="form-subtitle">Your photo joins the archive. Every submission — tagged with a city, neighborhood, and your story — helps us map the disconnection and build the case for change. All submissions are reviewed before publishing.</p>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Photo type</label>
+        <div class="type-toggle">
+          <button class="type-btn selected" id="t-hostile" onclick="selType('hostile')">
+            <span style="font-size:20px;">✕</span>
+            Hostile / exclusionary
+          </button>
+          <button class="type-btn" id="t-humane" onclick="selType('humane')">
+            <span style="font-size:20px;">○</span>
+            Humane / inclusive
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Photo upload</label>
+        <input type="file" id="file-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleFile(this)">
+        <input type="file" id="file-gallery" accept="image/*" style="display:none;" onchange="handleFile(this)">
+        <div class="upload-zone" id="upload-zone">
+          <div id="upload-prompt">
+            <div class="upload-icon">↑</div>
+            <div class="upload-hint" style="margin-bottom:14px;"><strong>Add a photo</strong></div>
+            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button type="button" class="btn-secondary" onclick="document.getElementById('file-camera').click()">📷 Camera</button>
+              <button type="button" class="btn-secondary" onclick="document.getElementById('file-gallery').click()">🖼️ Gallery</button>
+            </div>
+            <div class="upload-hint" style="margin-top:14px; font-size:12px;">JPG or PNG · max 10MB</div>
+          </div>
+          <div id="upload-preview" style="display:none;">
+            <img id="preview-img" style="max-width:100%; max-height:280px; border-radius:var(--radius); display:block; margin:0 auto 12px;">
+            <button type="button" class="btn-secondary" onclick="clearFile()">Remove photo</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" placeholder="e.g. Chicago">
+      </div>
+      <div class="form-group">
+        <label>Neighborhood <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <input type="text" placeholder="e.g. South Side, Pilsen">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select>
+          <option>Hostile bench / seating</option>
+          <option>Anti-homeless spikes</option>
+          <option>Broken curb cut</option>
+          <option>Inaccessible transit</option>
+          <option>No public restroom</option>
+          <option>Accessible playground</option>
+          <option>Humane seating</option>
+          <option>Sheltered bus stop</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>General location <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <input type="text" placeholder="e.g. Near a park, bus stop on Main St">
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-group full">
+        <label>Your story</label>
+        <textarea placeholder="What did this place say to you? Who does this design include — or push out? (2–4 sentences)"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Your name <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <input type="text" placeholder="How you'd like to be credited">
+      </div>
+      <div class="form-group">
+        <label>Instagram <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <input type="text" placeholder="@yourhandle">
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-group full">
+        <div style="font-size:12px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Camera details <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:12px;">— optional, for fellow photographers</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Camera / phone</label>
+            <input type="text" placeholder="e.g. iPhone 15, Sony A7III">
+          </div>
+          <div class="form-group">
+            <label>Lens</label>
+            <input type="text" placeholder="e.g. 35mm f/1.8">
+          </div>
+          <div class="form-group">
+            <label>Aperture</label>
+            <input type="text" placeholder="e.g. f/2.8">
+          </div>
+          <div class="form-group">
+            <label>Shutter speed</label>
+            <input type="text" placeholder="e.g. 1/250s">
+          </div>
+          <div class="form-group">
+            <label>ISO</label>
+            <input type="text" placeholder="e.g. 400">
+          </div>
+          <div class="form-group">
+            <label>Time of day</label>
+            <select>
+              <option value="">—</option>
+              <option>Golden hour (morning)</option>
+              <option>Morning</option>
+              <option>Midday</option>
+              <option>Afternoon</option>
+              <option>Golden hour (evening)</option>
+              <option>Night</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:1rem;">
+          <label>Any editing or post-processing</label>
+          <input type="text" placeholder="e.g. Lightroom, VSCO, no edits">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" onclick="handleSubmit()">Add to the archive →</button>
+      <span class="form-note">Every photo is reviewed before it publishes.</span>
+    </div>
+    <div class="success" id="success">✓ &nbsp;Submitted — thank you. Your photo will be reviewed and published to the archive shortly.</div>
+  </div>
+</div>
+
+
+<!-- MAP -->
+<div id="page-map" class="page">
+  <div class="section-header">
+    <span class="section-title">The map</span>
+    <span class="section-sub">Submissions by city &amp; neighborhood</span>
+  </div>
+  <div style="padding:3rem 2.5rem; max-width:640px;">
+    <p style="font-size:15px; color:var(--text-muted); line-height:1.8; font-weight:300; margin-bottom:2rem;">As submissions grow, this map will show where divided infrastructure concentrates across American cities — and where humane design is getting it right. Every dot is a story. Every cluster is a pattern worth bringing to a lawmaker.</p>
+    <div style="display:flex; gap:1.5rem; margin-bottom:1.5rem; font-size:13px; color:var(--text-muted);">
+      <span style="display:flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#C0392B; display:inline-block;"></span> Inhumane / hostile design</span>
+      <span style="display:flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#3B6D11; display:inline-block;"></span> Humane / inclusive design</span>
+    </div>
+    <div style="border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--bg-soft);">
+      <div style="padding:3.5rem 2rem; text-align:center;">
+        <div style="font-size:36px; margin-bottom:1rem; color:var(--text-muted);">◎</div>
+        <p style="font-family:'DM Serif Display',serif; font-size:17px; margin-bottom:0.75rem;">The map fills as submissions come in</p>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:1.5rem; max-width:360px; margin-left:auto; margin-right:auto;">Each approved submission is plotted by city and neighborhood. Once enough submissions arrive in a city, geographic patterns become visible.</p>
+        <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+      </div>
+    </div>
+    <div style="margin-top:2.5rem;">
+      <div style="font-size:11px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem;">How the map works</div>
+      <div style="border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;">
+        <div style="display:grid; grid-template-columns:auto 1fr; align-items:start; gap:1rem; padding:1.25rem 1.5rem; border-bottom:0.5px solid var(--border);">
+          <span style="font-family:'DM Serif Display',serif; font-size:20px; color:var(--text-muted);">01</span>
+          <div><div style="font-size:13px; font-weight:500; margin-bottom:3px;">You submit a city and neighborhood</div><div style="font-size:12px; color:var(--text-muted);">No exact address or zip code required — just enough to place it on a map.</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:auto 1fr; align-items:start; gap:1rem; padding:1.25rem 1.5rem; border-bottom:0.5px solid var(--border);">
+          <span style="font-family:'DM Serif Display',serif; font-size:20px; color:var(--text-muted);">02</span>
+          <div><div style="font-size:13px; font-weight:500; margin-bottom:3px;">Each submission is reviewed and approved</div><div style="font-size:12px; color:var(--text-muted);">Nothing publishes without human review. We check every photo before it appears on the map or in the archive.</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:auto 1fr; align-items:start; gap:1rem; padding:1.25rem 1.5rem;">
+          <span style="font-family:'DM Serif Display',serif; font-size:20px; color:var(--text-muted);">03</span>
+          <div><div style="font-size:13px; font-weight:500; margin-bottom:3px;">Patterns emerge by neighborhood</div><div style="font-size:12px; color:var(--text-muted);">As the archive grows, we can see where hostile and inaccessible infrastructure clusters — and where humane design exists to point to as a model.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="page-about" class="page">
+  <div class="about-wrap">
+    <div class="eyebrow">About Divided Connections</div>
+    <h2 class="about-title">Why divided — and why connections</h2>
+    <p class="about-body">Divided Connections is an ongoing, community-built archive of photographs documenting how American public infrastructure includes — or excludes — the people who depend on it most. The name is intentional: infrastructure is how cities connect people to jobs, healthcare, parks, and each other — and that connection is profoundly unequal.</p>
+    <div class="pull-quote">"Infrastructure is never neutral. Every bench, every ramp, every spike tells you who a city was built for — and who it was built against. This archive is the evidence."</div>
+    <p class="about-body">A single photo is a story. A thousand photos, tagged by zip code and category across dozens of cities, become <strong>evidence</strong> — the kind that can be placed in front of a city council member and say: this is your district, this is the disconnection, this is what needs to change.</p>
+    <p class="about-body">We document both sides: the hostile design that pushes vulnerable people out of public space, and the humane infrastructure that shows what's possible when a city is built for everyone. Because the goal isn't just to document the disconnection — it's to close it.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-num">01 — Document</div>
+        <div class="pillar-title">Build the archive</div>
+        <div class="pillar-body">Community photographers submit photos with zip codes, categories, and short personal stories about what they witnessed.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02 — Map</div>
+        <div class="pillar-title">Find the patterns</div>
+        <div class="pillar-body">As submissions grow, we map how hostile and inaccessible infrastructure concentrates by zip code — and how it overlaps with income and race data.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03 — Advocate</div>
+        <div class="pillar-title">Take it to lawmakers</div>
+        <div class="pillar-body">We produce city-by-city reports to bring directly to local officials, urban planners, and disability advocates as a concrete call for change.</div>
+      </div>
+    </div>
+    <p class="about-body">Follow the project on Instagram <strong>@dividedconnections</strong> and contribute your photographs to the archive.</p>
+    <div class="btn-row" style="margin-top:2rem;">
+      <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+      <button class="btn-secondary">Follow on Instagram</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('upload-prompt').style.display = 'none';
+    document.getElementById('upload-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function clearFile() {
+  document.getElementById('file-camera').value = '';
+  document.getElementById('file-gallery').value = '';
+  document.getElementById('upload-prompt').style.display = 'block';
+  document.getElementById('upload-preview').style.display = 'none';
+}
+function selType(t) {
+  document.getElementById('t-hostile').classList.toggle('selected', t === 'hostile');
+  document.getElementById('t-humane').classList.toggle('selected', t === 'humane');
+}
+function filterChip(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+function handleSubmit() {
+  const s = document.getElementById('success');
+  s.classList.add('show');
+  setTimeout(() => s.classList.remove('show'), 5000);
+}
+</script>
+</body>
+</html>
