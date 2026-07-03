@@ -260,11 +260,13 @@
     <button class="chip" onclick="filterChip(this)">Transit</button>
     <button class="chip" onclick="filterChip(this)">Parks</button>
   </div>
-  <div class="gallery-empty">
-    <p style="font-size:15px; font-family:'DM Serif Display',serif; margin-bottom:0.75rem;">The archive is waiting.</p>
-    <p style="margin-bottom:1.5rem;">Be the first to document the disconnection in your neighborhood.</p>
-    <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
-  </div>
+  <div id="gallery-grid" class="gallery-grid"></div>
+
+<div class="gallery-empty" id="gallery-empty">
+  <p style="font-size:15px; font-family:'DM Serif Display',serif; margin-bottom:0.75rem;">The archive is waiting.</p>
+  <p style="margin-bottom:1.5rem;">Be the first to document the disconnection in your neighborhood.</p>
+  <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+</div>
 </div>
 
 <!-- SUBMIT -->
@@ -581,7 +583,8 @@ if (selectedPhotoFile) {
     body: JSON.stringify(data)
   });
 
-  if (response.ok) {
+ if (response.ok) {
+
   document.querySelectorAll('#page-submit input, #page-submit textarea').forEach(el => {
     if (el.type !== 'file') el.value = '';
   });
@@ -595,8 +598,55 @@ if (selectedPhotoFile) {
   const s = document.getElementById('success');
   s.classList.add('show');
   setTimeout(() => s.classList.remove('show'), 5000);
-  }
+
+} else {
+
+  const errorText = await response.text();
+  alert('Submission failed: ' + errorText);
+
 }
+}
+async function loadGallery() {
+
+  const response = await fetch('/.netlify/functions/gallery');
+  const records = await response.json();
+
+  const grid = document.getElementById('gallery-grid');
+  const empty = document.getElementById('gallery-empty');
+
+  grid.innerHTML = '';
+
+  if (!records.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  records.forEach(record => {
+    const f = record.fields;
+    const photoUrl = f.Photo?.[0]?.url || '';
+
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+
+    item.innerHTML = `
+      <div class="gallery-img">
+        <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+
+      <div class="gallery-meta">
+        <div class="gallery-city">${f.City || ''}</div>
+        <div class="gallery-zip">${f.Neighborhood || ''}</div>
+        <div class="gallery-caption">${f.Story || ''}</div>
+      </div>
+    `;
+
+    grid.appendChild(item);
+  });
+}
+
+loadGallery();
 </script>
 </body>
 </html>
