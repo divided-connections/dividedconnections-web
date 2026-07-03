@@ -514,10 +514,46 @@ function filterChip(el) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
 }
-function handleSubmit() {
-  const s = document.getElementById('success');
-  s.classList.add('show');
-  setTimeout(() => s.classList.remove('show'), 5000);
+async function handleSubmit() {
+  const selectedType = document.getElementById('t-hostile').classList.contains('selected')
+    ? 'Hostile / exclusionary'
+    : 'Humane / inclusive';
+
+  const fields = document.querySelectorAll('#page-submit input, #page-submit select, #page-submit textarea');
+
+  const data = {
+    "Status": "Pending",
+    "Photo Type": selectedType,
+    "City": fields[2].value,
+    "Neighborhood": fields[3].value,
+    "Category": fields[4].value,
+    "General Location": fields[5].value,
+    "Story": fields[6].value,
+    "Name": fields[7].value,
+    "Instagram": fields[8].value,
+    "Camera": fields[9].value,
+    "Lens": fields[10].value,
+    "Aperture": fields[11].value,
+    "Shutter Speed": fields[12].value,
+    "ISO": fields[13].value,
+    "Time of Day": fields[14].value,
+    "Editing Notes": fields[15].value,
+    "Date Submitted": new Date().toLocaleString()
+  };
+
+  const response = await fetch('/.netlify/functions/airtable', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (response.ok) {
+    const s = document.getElementById('success');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 5000);
+  } else {
+    alert('Submission failed. Check Netlify deploy logs.');
+  }
 }
 </script>
 </body>
