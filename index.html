@@ -181,6 +181,50 @@
   .pillar-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
 
   svg.icon { width: 18px; height: 18px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  max-width: 900px;
+  max-height: 90vh;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-content img {
+  width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  display: block;
+}
+
+.modal-text {
+  padding: 1rem;
+  font-size: 14px;
+}
+
+.modal-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+}
+ 
 </style>
 </head>
 <body>
@@ -482,6 +526,17 @@
   </div>
 </div>
 
+<div id="photo-modal" class="modal" onclick="closePhotoModal()">
+  <div class="modal-close">×</div>
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <img id="modal-img" src="">
+    <div class="modal-text">
+      <div id="modal-city" style="font-weight:500;"></div>
+      <div id="modal-story" style="color:#6b6b6b; margin-top:6px;"></div>
+    </div>
+  </div>
+</div>
+ 
 <script>
  let selectedPhotoFile = null;
 const CLOUDINARY_CLOUD_NAME = "aqpkp3fw";
@@ -673,21 +728,21 @@ const item = document.createElement('div');
 
 function openPhoto(record) {
   const f = record.fields;
+  const photoUrl = f.Photo?.[0]?.url || '';
 
-  alert(
-    `${f.City || ''}${f.Neighborhood ? ', ' + f.Neighborhood : ''}\n\n` +
-    `${f.Story || ''}\n\n` +
-    `Category: ${f.Category || ''}\n` +
-    `Type: ${f["Photo Type"] || ''}\n` +
-    `Camera: ${f.Camera || ''}\n` +
-    `Lens: ${f.Lens || ''}\n` +
-    `Aperture: ${f.Aperture || ''}\n` +
-    `Shutter: ${f["Shutter Speed"] || ''}\n` +
-    `ISO: ${f.ISO || ''}\n` +
-    `Time of Day: ${f["Time of Day"] || ''}\n` +
-    `Editing: ${f["Editing Notes"] || ''}`
-  );
+  document.getElementById('modal-img').src = photoUrl;
+  document.getElementById('modal-city').textContent =
+    `${f.City || ''}${f.Neighborhood ? ', ' + f.Neighborhood : ''}`;
+
+  document.getElementById('modal-story').textContent = f.Story || '';
+
+  document.getElementById('photo-modal').classList.add('show');
 }
+
+function closePhotoModal() {
+  document.getElementById('photo-modal').classList.remove('show');
+}
+
 loadGallery();
 </script>
 </body>
