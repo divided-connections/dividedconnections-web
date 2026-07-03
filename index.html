@@ -517,10 +517,6 @@ function selType(t) {
   document.getElementById('t-hostile').classList.toggle('selected', t === 'hostile');
   document.getElementById('t-humane').classList.toggle('selected', t === 'humane');
 }
-function filterChip(el) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-}
 async function handleSubmit() {
   const selectedType = document.getElementById('t-hostile').classList.contains('selected')
     ? 'Hostile / exclusionary'
@@ -606,35 +602,64 @@ if (selectedPhotoFile) {
 
 }
 }
+let galleryRecords = [];
+let activeGalleryFilter = 'All';
+
+function filterChip(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeGalleryFilter = el.textContent.trim();
+  renderGallery();
+}
+
 async function loadGallery() {
-
   const response = await fetch('/.netlify/functions/gallery');
-  const records = await response.json();
+  galleryRecords = await response.json();
+  renderGallery();
+}
 
+function renderGallery() {
   const grid = document.getElementById('gallery-grid');
   const empty = document.getElementById('gallery-empty');
 
   grid.innerHTML = '';
 
-  if (!records.length) {
+  const filtered = galleryRecords.filter(record => {
+    const f = record.fields;
+    const category = f.Category || '';
+    const type = f["Photo Type"] || '';
+
+    if (activeGalleryFilter === 'All') return true;
+    if (activeGalleryFilter === 'Hostile design') return type.includes('Hostile');
+    if (activeGalleryFilter === 'Humane design') return type.includes('Humane');
+    if (activeGalleryFilter === 'Accessibility') return category.toLowerCase().includes('accessible') || category.toLowerCase().includes('curb');
+    if (activeGalleryFilter === 'Transit') return category.toLowerCase().includes('transit') || category.toLowerCase().includes('bus');
+    if (activeGalleryFilter === 'Parks') return category.toLowerCase().includes('park') || category.toLowerCase().includes('playground');
+
+    return true;
+  });
+
+  if (!filtered.length) {
     empty.style.display = 'block';
     return;
   }
 
   empty.style.display = 'none';
 
-  records.forEach(record => {
+  filtered.forEach(record => {
     const f = record.fields;
-    const photoUrl = f.Photo?.[0]?.url || '';
+const photoUrl = f.Photo?.[0]?.url || '';
 
-    const item = document.createElement('div');
+if (!photoUrl) return;
+
+const item = document.createElement('div');
     item.className = 'gallery-item';
+    item.onclick = () => openPhoto(record);
 
     item.innerHTML = `
       <div class="gallery-img">
         <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">
       </div>
-
       <div class="gallery-meta">
         <div class="gallery-city">${f.City || ''}</div>
         <div class="gallery-zip">${f.Neighborhood || ''}</div>
@@ -646,6 +671,23 @@ async function loadGallery() {
   });
 }
 
+function openPhoto(record) {
+  const f = record.fields;
+
+  alert(
+    `${f.City || ''}${f.Neighborhood ? ', ' + f.Neighborhood : ''}\n\n` +
+    `${f.Story || ''}\n\n` +
+    `Category: ${f.Category || ''}\n` +
+    `Type: ${f["Photo Type"] || ''}\n` +
+    `Camera: ${f.Camera || ''}\n` +
+    `Lens: ${f.Lens || ''}\n` +
+    `Aperture: ${f.Aperture || ''}\n` +
+    `Shutter: ${f["Shutter Speed"] || ''}\n` +
+    `ISO: ${f.ISO || ''}\n` +
+    `Time of Day: ${f["Time of Day"] || ''}\n` +
+    `Editing: ${f["Editing Notes"] || ''}`
+  );
+}
 loadGallery();
 </script>
 </body>
