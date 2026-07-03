@@ -538,7 +538,7 @@ async function handleSubmit() {
     "ISO": fields[13].value,
     "Time of Day": fields[14].value,
     "Editing Notes": fields[15].value,
-    "Date Submitted": new Date().toLocaleString()
+    "Date Submitted": new Date().toISOString()
   };
 
   const response = await fetch('/.netlify/functions/airtable', {
