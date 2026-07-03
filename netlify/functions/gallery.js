@@ -9,7 +9,7 @@ exports.handler = async () => {
 
   const response = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${AIRTABLE_TOKEN.trim()}`
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`
     }
   });
 
@@ -24,6 +24,9 @@ exports.handler = async () => {
 
   return {
     statusCode: 200,
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(result.records)
   };
 };
