@@ -481,6 +481,10 @@
 </div>
 
 <script>
+ let selectedPhotoFile = null;
+const CLOUDINARY_CLOUD_NAME = "aqpkp3fw";
+const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+
 function show(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -490,6 +494,8 @@ function show(id, btn) {
 function handleFile(input) {
   const file = input.files[0];
   if (!file) return;
+
+ selectedPhotoFile = file;
   const reader = new FileReader();
   reader.onload = function(e) {
     document.getElementById('preview-img').src = e.target.result;
@@ -499,6 +505,7 @@ function handleFile(input) {
   reader.readAsDataURL(file);
 }
 function clearFile() {
+ selectedPhotoFile = null;
   document.getElementById('file-camera').value = '';
   document.getElementById('file-gallery').value = '';
   document.getElementById('upload-prompt').style.display = 'block';
@@ -519,8 +526,38 @@ async function handleSubmit() {
 
   const fields = document.querySelectorAll('#page-submit input, #page-submit select, #page-submit textarea');
 
+ let photoUrl = "";
+
+if (selectedPhotoFile) {
+  const cloudinaryData = new FormData();
+  cloudinaryData.append("file", selectedPhotoFile);
+  cloudinaryData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const cloudinaryResponse = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: cloudinaryData
+    }
+  );
+
+  const cloudinaryResult = await cloudinaryResponse.json();
+
+  if (!cloudinaryResponse.ok) {
+    alert("Photo upload failed: " + JSON.stringify(cloudinaryResult));
+    return;
+  }
+
+  photoUrl = cloudinaryResult.secure_url;
+}
+ 
   const data = {
     "Status": "Pending",
+   "Photo": [
+  {
+    "url": photoUrl
+  }
+],
     "Photo Type": selectedType,
     "City": fields[2].value,
     "Neighborhood": fields[3].value,
