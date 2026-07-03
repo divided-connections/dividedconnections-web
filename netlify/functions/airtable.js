@@ -10,7 +10,16 @@ exports.handler = async (event) => {
   const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
   const TABLE_NAME = "Photo Submissions";
 
-  const data = JSON.parse(event.body);
+  return {
+  statusCode: 200,
+  body: JSON.stringify({
+    tokenExists: !!AIRTABLE_TOKEN,
+    tokenStartsWithPat: AIRTABLE_TOKEN?.startsWith("pat"),
+    baseId: AIRTABLE_BASE_ID
+  }),
+};
+
+const data = JSON.parse(event.body);
 
   const response = await fetch(
     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(TABLE_NAME)}`,
