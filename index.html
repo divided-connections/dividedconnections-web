@@ -582,12 +582,19 @@ if (selectedPhotoFile) {
   });
 
   if (response.ok) {
-    const s = document.getElementById('success');
-    s.classList.add('show');
-    setTimeout(() => s.classList.remove('show'), 5000);
-  } else {
-    const errorText = await response.text();
-alert('Submission failed: ' + errorText);
+  document.querySelectorAll('#page-submit input, #page-submit textarea').forEach(el => {
+    if (el.type !== 'file') el.value = '';
+  });
+
+  document.querySelectorAll('#page-submit select').forEach(el => {
+    el.selectedIndex = 0;
+  });
+
+  clearFile();
+
+  const s = document.getElementById('success');
+  s.classList.add('show');
+  setTimeout(() => s.classList.remove('show'), 5000);
   }
 }
 </script>
