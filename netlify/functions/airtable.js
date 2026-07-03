@@ -8,7 +8,7 @@ exports.handler = async (event) => {
 
   const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
   const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-  const TABLE_NAME = "Table 1";
+  const TABLE_NAME = "Photo Submissions";
 
   const data = JSON.parse(event.body);
 
