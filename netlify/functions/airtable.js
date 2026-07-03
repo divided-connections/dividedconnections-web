@@ -17,7 +17,7 @@ const data = JSON.parse(event.body);
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        Authorization: `Bearer ${AIRTABLE_TOKEN.trim()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
