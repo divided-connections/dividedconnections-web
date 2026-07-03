@@ -552,7 +552,8 @@ async function handleSubmit() {
     s.classList.add('show');
     setTimeout(() => s.classList.remove('show'), 5000);
   } else {
-    alert('Submission failed. Check Netlify deploy logs.');
+    const errorText = await response.text();
+alert('Submission failed: ' + errorText);
   }
 }
 </script>
