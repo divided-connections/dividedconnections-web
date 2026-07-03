@@ -224,6 +224,90 @@
   font-size: 32px;
   cursor: pointer;
 }
+
+ #modal-city {
+  font-family: 'DM Serif Display', serif;
+  font-size: 34px;
+  font-weight: 400;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+#modal-story {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+#modal-details {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+#modal-details p {
+  margin: 6px 0;
+}
+
+#modal-details strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+#modal-details h4 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 20px 0 12px;
+}
+
+.modal-city {
+  font-family: 'DM Serif Display', serif;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.modal-neighborhood {
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--text-muted);
+  letter-spacing: .03em;
+}
+
+.detail-section {
+  margin-top: 32px;
+}
+
+.detail-heading {
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #efefef;
+}
+
+.detail-label {
+  color: #888;
+  font-size: 13px;
+}
+
+.detail-value {
+  color: #111;
+  font-size: 14px;
+  font-weight: 500;
+} 
  
 </style>
 </head>
@@ -530,9 +614,14 @@
   <div class="modal-close">×</div>
   <div class="modal-content" onclick="event.stopPropagation()">
     <img id="modal-img" src="">
-    <div class="modal-text">
-      <div id="modal-city" style="font-weight:500;"></div>
-      <div id="modal-story" style="color:#6b6b6b; margin-top:6px;"></div>
+      <div class="modal-text">
+  <div id="modal-city"></div>
+  <p id="modal-story"></p>
+  <hr style="margin:20px 0;">
+  <div id="modal-details"></div>
+</div>
+
+</div>
     </div>
   </div>
 </div>
@@ -712,31 +801,108 @@ const item = document.createElement('div');
     item.onclick = () => openPhoto(record);
 
     item.innerHTML = `
-      <div class="gallery-img">
-        <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">
-      </div>
-      <div class="gallery-meta">
-        <div class="gallery-city">${f.City || ''}</div>
-        <div class="gallery-zip">${f.Neighborhood || ''}</div>
-        <div class="gallery-caption">${f.Story || ''}</div>
-      </div>
-    `;
+  <div class="gallery-img">
+    <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">
+  </div>
+
+  <div class="gallery-meta">
+    <div class="gallery-city">${f.City || ''}</div>
+    <div class="gallery-zip">${f.Neighborhood || ''}</div>
+    <div class="gallery-caption">${f.Story || ''}</div>
+  </div>
+`;
 
     grid.appendChild(item);
   });
 }
 
 function openPhoto(record) {
+
   const f = record.fields;
   const photoUrl = f.Photo?.[0]?.url || '';
 
   document.getElementById('modal-img').src = photoUrl;
-  document.getElementById('modal-city').textContent =
-    `${f.City || ''}${f.Neighborhood ? ', ' + f.Neighborhood : ''}`;
 
-  document.getElementById('modal-story').textContent = f.Story || '';
+  document.getElementById('modal-city').innerHTML = `
+<div class="modal-city">${f.City || ''}</div>
+<div class="modal-neighborhood">${f.Neighborhood || ''}</div>
+`;
 
+  document.getElementById('modal-story').textContent =
+    f.Story || '';
+
+ document.getElementById('modal-details').innerHTML = `
+
+<div class="detail-section">
+
+  <div class="detail-heading">ABOUT THIS PHOTO</div>
+
+  <div class="detail-row">
+    <span class="detail-label">Type</span>
+    <span class="detail-value">${f["Photo Type"] || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Category</span>
+    <span class="detail-value">${f.Category || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Photographer</span>
+    <span class="detail-value">${f.Name || 'Anonymous'}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Instagram</span>
+    <span class="detail-value">${f.Instagram || '—'}</span>
+  </div>
+
+</div>
+
+<div class="detail-section">
+
+  <div class="detail-heading">CAMERA SETTINGS</div>
+
+  <div class="detail-row">
+    <span class="detail-label">Camera</span>
+    <span class="detail-value">${f.Camera || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Lens</span>
+    <span class="detail-value">${f.Lens || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Aperture</span>
+    <span class="detail-value">${f.Aperture || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Shutter</span>
+    <span class="detail-value">${f["Shutter Speed"] || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">ISO</span>
+    <span class="detail-value">${f.ISO || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Time</span>
+    <span class="detail-value">${f["Time of Day"] || ''}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Editing</span>
+    <span class="detail-value">${f["Editing Notes"] || 'None'}</span>
+  </div>
+
+</div>
+
+`;
   document.getElementById('photo-modal').classList.add('show');
+
 }
 
 function closePhotoModal() {
