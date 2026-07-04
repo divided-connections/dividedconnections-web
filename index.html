@@ -122,7 +122,11 @@
   .chip.active, .chip:hover { background: var(--text); color: white; border-color: var(--text); }
 
   .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
-  .gallery-item { border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .gallery-item {
+  border-right: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+}
   .gallery-item:nth-child(3n) { border-right: none; }
   .gallery-img { width: 100%; aspect-ratio: 1; background: var(--bg-soft); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
   .gallery-meta { padding: 12px 16px; }
@@ -577,55 +581,67 @@
 </div>
 
 <!-- ABOUT -->
+<!-- ABOUT -->
 <div id="page-about" class="page">
   <div class="about-wrap">
     <div class="eyebrow">About Divided Connections</div>
     <h2 class="about-title">Why divided — and why connections</h2>
+
     <p class="about-body">Divided Connections is an ongoing, community-built archive of photographs documenting how American public infrastructure includes — or excludes — the people who depend on it most. The name is intentional: infrastructure is how cities connect people to jobs, healthcare, parks, and each other — and that connection is profoundly unequal.</p>
+
     <div class="pull-quote">"Infrastructure is never neutral. Every bench, every ramp, every spike tells you who a city was built for — and who it was built against. This archive is the evidence."</div>
+
     <p class="about-body">A single photo is a story. A thousand photos, tagged by zip code and category across dozens of cities, become <strong>evidence</strong> — the kind that can be placed in front of a city council member and say: this is your district, this is the disconnection, this is what needs to change.</p>
+
     <p class="about-body">We document both sides: the hostile design that pushes vulnerable people out of public space, and the humane infrastructure that shows what's possible when a city is built for everyone. Because the goal isn't just to document the disconnection — it's to close it.</p>
+
     <div class="pillars">
       <div class="pillar">
         <div class="pillar-num">01 — Document</div>
         <div class="pillar-title">Build the archive</div>
-        <div class="pillar-body">Community photographers submit photos with zip codes, categories, and short personal stories about what they witnessed.</div>
+        <div class="pillar-body">Community photographers submit photos with cities, neighborhoods, and short personal stories about what they witnessed.</div>
       </div>
+
       <div class="pillar">
         <div class="pillar-num">02 — Map</div>
         <div class="pillar-title">Find the patterns</div>
-        <div class="pillar-body">As submissions grow, we map how hostile and inaccessible infrastructure concentrates by zip code — and how it overlaps with income and race data.</div>
+        <div class="pillar-body">As submissions grow, we map how hostile and inaccessible infrastructure concentrates by neighborhood.</div>
       </div>
+
       <div class="pillar">
         <div class="pillar-num">03 — Advocate</div>
         <div class="pillar-title">Take it to lawmakers</div>
-        <div class="pillar-body">We produce city-by-city reports to bring directly to local officials, urban planners, and disability advocates as a concrete call for change.</div>
+        <div class="pillar-body">We produce city-by-city evidence that can be shared with local officials, urban planners, and disability advocates.</div>
       </div>
     </div>
+
     <p class="about-body">
-  Questions, media inquiries, collaboration ideas, or feedback? We'd love to hear from you at
-  <a href="mailto:dividedcollections@gmail.com"
-     style="color:inherit; text-decoration:underline;">
-    <strong>dividedcollections@gmail.com</strong>
-  </a>.
-</p>
+      Questions, media inquiries, collaboration ideas, or feedback? We'd love to hear from you at
+      <a href="mailto:dividedcollections@gmail.com" style="color:inherit; text-decoration:underline;">
+        <strong>dividedcollections@gmail.com</strong>
+      </a>.
+    </p>
 
-<div id="photo-modal" class="modal" onclick="closePhotoModal()">
-  <div class="modal-close">×</div>
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <img id="modal-img" src="">
-      <div class="modal-text">
-  <div id="modal-city"></div>
-  <p id="modal-story"></p>
-  <hr style="margin:20px 0;">
-  <div id="modal-details"></div>
-</div>
-
-</div>
+    <div class="btn-row" style="margin-top:2rem;">
+      <button class="btn-primary" onclick="show('submit', document.querySelectorAll('.nav-link')[2])">Submit a photo →</button>
+      <a href="mailto:dividedcollections@gmail.com" class="btn-secondary" style="text-decoration:none;">Contact</a>
     </div>
   </div>
 </div>
- 
+
+<div id="photo-modal" class="modal">
+  <div class="modal-close" onclick="closePhotoModal()">×</div>
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <img id="modal-img" src="">
+    <div class="modal-text">
+      <div id="modal-city"></div>
+      <p id="modal-story"></p>
+      <hr style="margin:20px 0;">
+      <div id="modal-details"></div>
+    </div>
+  </div>
+</div>
+
 <script>
  let selectedPhotoFile = null;
 const CLOUDINARY_CLOUD_NAME = "aqpkp3fw";
@@ -782,9 +798,6 @@ function renderGallery() {
     if (activeGalleryFilter === 'All') return true;
     if (activeGalleryFilter === 'Hostile design') return type.includes('Hostile');
     if (activeGalleryFilter === 'Humane design') return type.includes('Humane');
-    if (activeGalleryFilter === 'Accessibility') return category.toLowerCase().includes('accessible') || category.toLowerCase().includes('curb');
-    if (activeGalleryFilter === 'Transit') return category.toLowerCase().includes('transit') || category.toLowerCase().includes('bus');
-    if (activeGalleryFilter === 'Parks') return category.toLowerCase().includes('park') || category.toLowerCase().includes('playground');
 
     return true;
   });
@@ -803,8 +816,14 @@ const photoUrl = f.Photo?.[0]?.url || '';
 if (!photoUrl) return;
 
 const item = document.createElement('div');
-    item.className = 'gallery-item';
-    item.onclick = () => openPhoto(record);
+item.className = 'gallery-item';
+
+item.addEventListener('click', () => openPhoto(record));
+
+item.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  openPhoto(record);
+}, { passive: false });
 
     item.innerHTML = `
   <div class="gallery-img">
