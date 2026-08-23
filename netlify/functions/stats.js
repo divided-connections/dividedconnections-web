@@ -35,13 +35,13 @@ exports.handler = async () => {
 
     } while (offset);
 
-    // 1. ALL submissions, regardless of approval status
-    const photosSubmitted = allRecords.length;
+    // Only approved submissions count anywhere on the public website
+const approvedRecords = allRecords.filter(record =>
+  record.fields?.Status === "Approved"
+);
 
-    // Only approved submissions count toward public city/map stats
-    const approvedRecords = allRecords.filter(record =>
-      record.fields?.Status === "Approved"
-    );
+// 1. Approved photos only
+const photosSubmitted = approvedRecords.length;
 
     // 2. Unique approved cities
     const cities = new Set();
