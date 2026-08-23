@@ -997,8 +997,33 @@ async function loadMap() {
   });
 } 
 
+async function loadStats() {
+  try {
+    const response = await fetch('/.netlify/functions/stats');
+    const stats = await response.json();
+
+    if (!response.ok) {
+      console.error('Stats failed:', stats);
+      return;
+    }
+
+    document.getElementById('stat-photos').textContent =
+      stats.photosSubmitted;
+
+    document.getElementById('stat-cities').textContent =
+      stats.citiesDocumented;
+
+    document.getElementById('stat-neighborhoods').textContent =
+      stats.neighborhoodsMapped;
+
+  } catch (error) {
+    console.error('Could not load stats:', error);
+  }
+}
+ 
 loadGallery();
 loadMap();
+loadStats();
  
 </script>
 </body>
